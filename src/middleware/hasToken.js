@@ -3,8 +3,8 @@ dotenv.config();
 import jwt from "jsonwebtoken";
 import userSchema from "../models/userSchema.js";
 
-//mail verification
-export const verification = async (req, res) => {
+
+export const hasToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     // console.log(authHeader)
@@ -19,11 +19,6 @@ export const verification = async (req, res) => {
         console.log("decoded", decoded)
         if (err) {
           if (err.name === "TokenExpiredError") {
-            //{
-            //   name: "TokenExpiredError",
-            //   message: "jwt expired",
-            //   expiredAt: Date
-            // }
             return res.status(400).json({
               success: false,
               message: "The registration Token is Expired",
@@ -41,15 +36,9 @@ export const verification = async (req, res) => {
               success: false,
               message: "User not found",
             });
-          } else {
-            user.token = null;
-            user.isVerified = true;
-            await user.save();
-            return res.status(200).json({
-              success: true,
-              message: "Email verified successfully",
-            });
-          }
+          } 
+          req.userId = id;
+          next();
         }
       });
     }
@@ -62,9 +51,3 @@ export const verification = async (req, res) => {
   }
 };
 
-//jwt sign 
-// jwt.sign(
-//   { id: user._id },
-//   process.env.secretKey,
-//   { expiresIn: "10m" }
-// )

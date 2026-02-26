@@ -1,5 +1,4 @@
 import nodemailer from "nodemailer";
-import dotenv from "dotenv/config"
 
 export const verifyMail = async (token, email) => {
 
@@ -26,4 +25,4 @@ export const verifyMail = async (token, email) => {
     console.log("Email Sent Successfully");
     console.log(info);
   });
-};
+}

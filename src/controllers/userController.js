@@ -1,6 +1,5 @@
 import userSchema from "../models/userSchema.js";
 import bcrypt from "bcrypt";
-import dotenv from "dotenv/config";
 import jwt from "jsonwebtoken";
 import { verifyMail } from "../emailVerify/verifyMail.js";
 
@@ -45,8 +44,6 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    console.log("tryyyyyyyy");
-
     const { email, password } = req.body;
 
     const user = await userSchema.findOne({ email });
@@ -56,9 +53,7 @@ export const login = async (req, res) => {
         message: "Unauthorised access",
       });
     } else {
-      console.log("tryyyyyyyy111");
-
-      const passwordCheck = await bcrypt.compare(password, user.password);
+      const passwordCheck = await bcrypt.compare(password, user.password)
       console.log(passwordCheck);
       if (!passwordCheck) {
         return res.status(402).json({
@@ -66,10 +61,20 @@ export const login = async (req, res) => {
           message: "Incorrect Password",
         });
       } else if (passwordCheck && user.isVerified === true) {
+        const accessToken = jwt.sign({ id: user._id }, process.env.secretKey, {
+          expiresIn: "10days",
+        });
 
+        const refreshToken = jwt.sign({ id: user._id }, process.env.secretKey, {
+          expiresIn: "30days",
+        });
+        user.isLoggedIn = true
+        await user.save();
         return res.status(200).json({
           success: true,
           message: "User Logged In Successfully",
+          accessToken:accessToken,
+          refreshToken:refreshToken,
           data: user,
         });
       } else {
