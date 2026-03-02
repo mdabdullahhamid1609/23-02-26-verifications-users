@@ -41,7 +41,7 @@ export const getAll = async (req, res) => {
     const data = await todoSchema.find({
       userId: req.userId,
     });
-   
+
     return res.status(200).json({
       success: true,
       message: "todo fetched sucessfully",
@@ -54,3 +54,78 @@ export const getAll = async (req, res) => {
     });
   }
 };
+
+
+
+export const deleteTodo = async (req, res) => {
+  try {
+    const todoId = req.params.id;
+
+    const data = await todoSchema.findOneAndDelete({
+      _id: todoId,
+      userId: req.userId, // ensures ownership
+    });
+
+    console.log("data to del", data)
+    console.log("userId", req.userId)
+    console.log("todoId", todoId)
+
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        message: "Todo not found or not authorized",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Todo deleted successfully",
+      data,
+    });
+
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+export const updatedId = async (req, res) => {
+  try {
+    const  todoId = req.params.id
+    const {title} = req.body
+    const data = await todoSchema.findOne({
+      _id: todoId,
+      userId: req.userId
+    })
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        message: "Todo not found or not authorized",
+      });
+    }else{
+      data.title = title;
+       await data.save();
+    
+    return res.status(200).json({
+      success: true,
+      message: "Todo updated successfully",
+      data,
+    });
+  }
+    
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({
+      sucess: false,
+      message: "server error"
+    })
+  }
+}
+
+
+
+
+
+
