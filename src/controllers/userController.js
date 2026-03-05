@@ -2,6 +2,7 @@ import userSchema from "../models/userSchema.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { verifyMail } from "../emailVerify/verifyMail.js";
+import sessionSchema from "../models/sessionSchema.js";
 
 export const register = async (req, res) => {
   try {
@@ -61,6 +62,13 @@ export const login = async (req, res) => {
           message: "Incorrect Password",
         });
       } else if (passwordCheck && user.isVerified === true) {
+
+        const existing = await sessionSchema.findOneAndDelete({ userId: user._id})
+
+        await sessionSchema.create({ userId: user._id})
+
+
+
         const accessToken = jwt.sign({ id: user._id }, process.env.secretKey, {
           expiresIn: "10days",
         });
@@ -90,4 +98,32 @@ export const login = async (req, res) => {
       message: "Internal server error",
     });
   }
+};
+
+
+export const logout = async (req, res) => {
+
+    try {
+        const existing = await sessionSchema.findOne({ userId: req.userId });
+        const user = await userSchema.findById({ _id: req.userId });    
+        if (existing) {
+            await sessionSchema.findOneAndDelete({ userId: req.userId });
+            user.isLoggedIn = false;
+            await user.save()
+            return res.status(200).json({
+                success: true,
+                message: "Session successfully ended",
+            });
+        } else {
+            return res.status(404).json({
+                success: false,
+                message: "User had no session",
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
 };
