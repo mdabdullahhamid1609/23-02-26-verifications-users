@@ -1,7 +1,6 @@
 import nodemailer from "nodemailer";
 
 export const verifyMail = async (token, email) => {
-
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -14,7 +13,7 @@ export const verifyMail = async (token, email) => {
     from: process.env.mailUser,
     to: email,
     subject: "Email Verification",
-    text: `Hello User, Kindly Verify ${token} `
+    text: `Hello User, Kindly Verify ${token} `,
   };
 
   transporter.sendMail(mailConfigurations, function (error, info) {
@@ -25,4 +24,4 @@ export const verifyMail = async (token, email) => {
     console.log("Email Sent Successfully");
     console.log(info);
   });
-}
+};
